@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The $100 Mines Challenge</title>
+    <link href="styles.css" rel="stylesheet">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="index.html">
+          <img src="assets/logo.svg" alt="Mines Challenge logo" class="logo" />
+          <span class="brand-text">The $100 Mines Challenge</span>
+        </a>
+        <nav class="nav">
+          <a href="rules.html">View Rules</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <h1>The $100 Mines Challenge</h1>
+            <p class="subhead">Start with $1.50. Reach $100. Beat it and earn a $25 skill bonus.</p>
+
+            <p class="lead">This is a skill-based Mines challenge. There are no tricks, no time limits, and no hidden rules.</p>
+
+            <ul class="summary">
+              <li>Most players won’t finish.</li>
+              <li>Some will get close.</li>
+              <li>A few will beat it — and those players get paid.</li>
+            </ul>
+
+            <div class="hero-ctas">
+              <a class="btn btn-primary" href="#start">Start the Challenge</a>
+              <a class="link-secondary" href="rules.html">View Rules</a>
+            </div>
+          </div>
+
+          <aside class="hero-side">
+            <div class="card">
+              <h3>What you get</h3>
+              <ul class="what-you-get">
+                <li><strong>Entry:</strong> $7</li>
+                <li><strong>Starting balance:</strong> $1.50</li>
+                <li><strong>Game:</strong> Mines</li>
+                <li><strong>Goal:</strong> $100</li>
+                <li><strong>Reward:</strong> $100 cash + $25 skill bonus</li>
+                <li><strong>Payouts:</strong> processed within 24 hours</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="start" class="section container">
+        <h2>Get started</h2>
+        <p class="muted">Click the button to enter the challenge.</p>
+        <a class="btn btn-primary" href="#">Start the Challenge</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© <span id="year"></span> Mines Challenge. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>
