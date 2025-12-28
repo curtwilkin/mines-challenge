@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mines Challenge — Play</title>
+  <link href="styles.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0f1724;
+      --panel:#111c2b;
+      --muted:#9aa4b2;
+      --text:#e6eef6;
+      --accent:#0ea5a0;
+      --danger:#ef4444;
+      --radius:12px;
+    }
+    body{background:var(--bg);color:var(--text);margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .container{max-width:980px;margin:0 auto;padding:22px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+    .brand img{height:32px;width:auto}
+    .panel{background:var(--panel);border-radius:var(--radius);padding:16px;box-shadow:0 0 40px rgba(0,0,0,.35)}
+    .grid-wrap{display:grid;grid-template-columns: 320px 1fr;gap:16px}
+    @media (max-width: 900px){ .grid-wrap{grid-template-columns:1fr} }
+
+    .statrow{display:grid;grid-template-columns: repeat(2, 1fr);gap:10px;margin-top:10px}
+    .stat{background:rgba(255,255,255,.03);border-radius:12px;padding:10px}
+    .stat .label{color:var(--muted);font-size:12px}
+    .stat .value{font-size:18px;font-weight:800;margin-top:4px}
+
+    .controls label{display:block;color:var(--muted);font-size:12px;margin-top:10px;margin-bottom:6px}
+    .controls input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#0b1421;color:var(--text)}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--accent);color:#001514}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.12)}
+    .btn-danger{background:var(--danger);color:#180203}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .notice{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.5}
+    .badge{display:inline-block;background:rgba(14,165,160,.15);border:1px solid rgba(14,165,160,.25);color:#aef6f2;padding:6px 10px;border-radius:999px;font-size:12px}
+
+    .board{display:grid;grid-template-columns: repeat(5, 1fr);gap:10px}
+    .tile{
+      aspect-ratio: 1 / 1;
+      border-radius:14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;font-weight:900;
+      user-select:none;
+      transition:transform .05s ease;
+    }
+    .tile:active{transform:scale(.98)}
+    .tile.revealed.safe{background:rgba(14,165,160,.14);border-color:rgba(14,165,160,.35)}
+    .tile.revealed.mine{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35)}
+    .tile.disabled{cursor:not-allowed;opacity:.7}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .row .left{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .winbar{
+      margin-top:14px;
+      padding:14px;
+      border-radius:14px;
+      background:rgba(14,165,160,.12);
+      border:1px solid rgba(14,165,160,.25);
+      display:none;
+    }
+    .winbar a{color:#aef6f2;font-weight:900}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="Mines Challenge logo" />
+        <span style="font-weight:900">Mines Challenge</span>
+      </a>
+      <a href="rules.html" style="color:var(--muted);text-decoration:none">Rules</a>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="panel controls">
+        <div class="row">
+          <div class="left">
+            <span class="badge">5 Mines • Early Access</span>
+          </div>
+          <div style="color:var(--muted);font-size:12px">Goal: <b>$100</b></div>
+        </div>
+
+        <div class="statrow">
+          <div class="stat">
+            <div class="label">Balance</div>
+            <div class="value" id="balanceText">$1.50</div>
+          </div>
+          <div class="stat">
+            <div class="label">In-Round</div>
+            <div class="value" id="inRoundText">—</div>
+          </div>
+        </div>
+
+        <label for="betInput">Bet amount</label>
+        <input id="betInput" type="number" step="0.01" min="0.01" value="0.10" />
+
+        <div class="statrow">
+          <div class="stat">
+            <div class="label">Safe picks</div>
+            <div class="value" id="safeText">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Multiplier</div>
+            <div class="value" id="multText">1.00x</div>
+          </div>
+        </div>
+
+        <div class="statrow">
+          <div class="stat">
+            <div class="label">Cashout value</div>
+            <div class="value" id="cashoutText">$0.00</div>
+          </div>
+          <div class="stat">
+            <div class="label">Status</div>
+            <div class="value" id="statusText">Ready</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:grid;gap:10px">
+          <button class="btn btn-primary" id="startBtn">Start Round</button>
+          <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
+          <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
+        </div>
+
+        <div class="notice">
+          Starts at <b>$1.50</b>. If your balance hits <b>$0</b>, your run ends.<br>
+          Hit <b>$100</b> to win, then submit proof for payout.
+        </div>
+
+        <div class="winbar" id="winBar">
+          <div style="font-weight:900;font-size:16px;margin-bottom:6px">You beat the $100 Mines Challenge.</div>
+          <div>Submit your proof here: <a id="claimLink" href="https://forms.gle/yWRCRLJX6pQBNpQd6" target="_blank">Claim Win</a></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <div class="left" style="gap:12px">
+            <div style="font-weight:900;font-size:18px">Mines Board</div>
+            <div style="color:var(--muted);font-size:12px">Pick tiles. Cashout anytime.</div>
+          </div>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="notice" style="margin-top:12px">
+          Tip: Discipline wins. Cash out. Don’t chase.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const BOARD_SIZE = 25; // 5x5
+  const MINES = 5;
+  const START_BALANCE = 1.50;
+  const TARGET = 100.00;
+
+  let balance = START_BALANCE;
+  let inRound = false;
+  let wager = 0;
+  let mineSet = new Set();
+  let revealed = new Set();
+  let safePicks = 0;
+
+  const boardEl = document.getElementById("board");
+  const balanceText = document.getElementById("balanceText");
+  const inRoundText = document.getElementById("inRoundText");
+  const betInput = document.getElementById("betInput");
+  const safeText = document.getElementById("safeText");
+  const multText = document.getElementById("multText");
+  const cashoutText = document.getElementById("cashoutText");
+  const statusText = document.getElementById("statusText");
+  const startBtn = document.getElementById("startBtn");
+  const cashoutBtn = document.getElementById("cashoutBtn");
+  const newRunBtn = document.getElementById("newRunBtn");
+  const winBar = document.getElementById("winBar");
+
+  function fmtMoney(x){ return "$" + x.toFixed(2); }
+
+  function comb(n,k){
+    if (k < 0 || k > n) return 0;
+    k = Math.min(k, n-k);
+    let num = 1, den = 1;
+    for(let i=1;i<=k;i++){
+      num *= (n - (k - i));
+      den *= i;
+    }
+    return num / den;
+  }
+
+  function fairMultiplier(k){
+    if (k <= 0) return 1.0;
+    const p = comb(BOARD_SIZE - MINES, k) / comb(BOARD_SIZE, k);
+    return 1 / p;
+  }
+
+  function cryptoShuffle(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const r = new Uint32Array(1);
+      crypto.getRandomValues(r);
+      const j = r[0] % (i + 1);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildBoard(){
+    boardEl.innerHTML = "";
+    for(let i=0;i<BOARD_SIZE;i++){
+      const btn = document.createElement("button");
+      btn.className = "tile disabled";
+      btn.disabled = true;
+      btn.dataset.idx = String(i);
+      btn.addEventListener("click", () => onTileClick(i, btn));
+      boardEl.appendChild(btn);
+    }
+  }
+
+  function setTilesEnabled(enabled){
+    [...boardEl.children].forEach(t => {
+      t.disabled = !enabled;
+      t.classList.toggle("disabled", !enabled);
+    });
+  }
+
+  function resetRoundUI(){
+    revealed.clear();
+    safePicks = 0;
+    safeText.textContent = "0";
+    multText.textContent = "1.00x";
+    cashoutText.textContent = "$0.00";
+    inRoundText.textContent = "—";
+    statusText.textContent = "Ready";
+    cashoutBtn.disabled = true;
+    [...boardEl.children].forEach(t => {
+      t.classList.remove("revealed","safe","mine");
+      t.textContent = "";
+    });
+  }
+
+  function updateBalanceUI(){
+    balanceText.textContent = fmtMoney(balance);
+    betInput.max = Math.max(0.01, balance).toFixed(2);
+
+    winBar.style.display = (balance >= TARGET) ? "block" : "none";
+
+    if (balance <= 0){
+      newRunBtn.style.display = "block";
+      statusText.textContent = "Run ended";
+      setTilesEnabled(false);
+      startBtn.disabled = true;
+      cashoutBtn.disabled = true;
+    } else {
+      newRunBtn.style.display = "none";
+      startBtn.disabled = false;
+    }
+  }
+
+  function updateCashoutUI(){
+    const mult = fairMultiplier(safePicks);
+    multText.textContent = mult.toFixed(2) + "x";
+    cashoutText.textContent = fmtMoney(wager * mult);
+  }
+
+  function revealAllMines(){
+    [...boardEl.children].forEach((t, idx) => {
+      if (mineSet.has(idx)){
+        t.classList.add("revealed","mine");
+        t.textContent = "💣";
+      }
+    });
+  }
+
+  function startRound(){
+    if (inRound) return;
+
+    const bet = Number(betInput.value);
+    if (!Number.isFinite(bet) || bet <= 0){
+      statusText.textContent = "Enter a valid bet";
+      return;
+    }
+    if (bet > balance){
+      statusText.textContent = "Bet exceeds balance";
+      return;
+    }
+
+    wager = Math.round(bet * 100) / 100;
+    balance = Math.round((balance - wager) * 100) / 100;
+
+    const indices = Array.from({length: BOARD_SIZE}, (_,i)=>i);
+    cryptoShuffle(indices);
+    mineSet = new Set(indices.slice(0, MINES));
+
+    inRound = true;
+    resetRoundUI();
+    setTilesEnabled(true);
+
+    inRoundText.textContent = fmtMoney(wager);
+    statusText.textContent = "In round";
+    cashoutBtn.disabled = false;
+    updateBalanceUI();
+    updateCashoutUI();
+  }
+
+  function onTileClick(idx, tileEl){
+    if (!inRound) return;
+    if (revealed.has(idx)) return;
+
+    revealed.add(idx);
+
+    if (mineSet.has(idx)){
+      tileEl.classList.add("revealed","mine");
+      tileEl.textContent = "💣";
+      revealAllMines();
+      inRound = false;
+      setTilesEnabled(false);
+      cashoutBtn.disabled = true;
+      statusText.textContent = "Boom. Round lost.";
+      wager = 0;
+      inRoundText.textContent = "—";
+      updateBalanceUI();
+      return;
+    }
+
+    tileEl.classList.add("revealed","safe");
+    tileEl.textContent = "💎";
+    safePicks++;
+    safeText.textContent = String(safePicks);
+    updateCashoutUI();
+  }
+
+  function cashout(){
+    if (!inRound) return;
+    const mult = fairMultiplier(safePicks);
+    const payout = wager * mult;
+    balance = Math.round((balance + payout) * 100) / 100;
+
+    inRound = false;
+    setTilesEnabled(false);
+    cashoutBtn.disabled = true;
+
+    statusText.textContent = "Cashed out.";
+    wager = 0;
+    inRoundText.textContent = "—";
+
+    updateBalanceUI();
+  }
+
+  function newRun(){
+    balance = START_BALANCE;
+    inRound = false;
+    wager = 0;
+    mineSet = new Set();
+    resetRoundUI();
+    setTilesEnabled(false);
+    startBtn.disabled = false;
+    updateBalanceUI();
+  }
+
+  buildBoard();
+  resetRoundUI();
+  updateBalanceUI();
+  setTilesEnabled(false);
+
+  startBtn.addEventListener("click", startRound);
+  cashoutBtn.addEventListener("click", cashout);
+  newRunBtn.addEventListener("click", newRun);
+</script>
+</body>
+</html>

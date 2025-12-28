@@ -3,48 +3,98 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>The $100 Mines Challenge</title>
+    <title>Mines Challenge</title>
     <link href="styles.css" rel="stylesheet">
   </head>
   <body>
     <header class="site-header">
-      <div class="container">
-        <a class="brand" href="index.html">
-          <img src="assets/logo.svg" alt="Mines Challenge logo" class="logo" />
-          <span class="brand-text">The $100 Mines Challenge</span>
-        </a>
-        <nav class="nav">
-          <a href="rules.html">View Rules</a>
-        </nav>
-      </div>
-    </header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.svg" alt="Mines Challenge logo" class="logo" />
+      <span class="brand-text">Mines Challenge</span>
+    </a>
+  </div>
+</header>
 
     <main>
       <section class="hero">
         <div class="container hero-inner">
+          <div class="early-access-badge">Early Access Version</div>
           <div class="hero-copy">
-            <h1>The $100 Mines Challenge</h1>
-            <p class="subhead">Start with $1.50. Reach $100. Beat it and earn a $25 skill bonus.</p>
+  <h1 class="hero-title">The $100 Mines Challenge</h1>
 
-            <p class="lead">This is a skill-based Mines challenge. There are no tricks, no time limits, and no hidden rules.</p>
 
-            <ul class="summary">
-              <li>Most players won’t finish.</li>
-              <li>Some will get close.</li>
-              <li>A few will beat it — and those players get paid.</li>
-            </ul>
+  <p class="subhead">
+    Start with <span class="accent-num">$1.50</span>. Reach
+    <span class="accent-num">$100</span>. Beat it and earn $100 +
+    <span class="accent-num">$25</span> skill bonus.
+  </p>
 
-            <div class="hero-ctas">
-              <a class="btn btn-primary" href="#start">Start the Challenge</a>
-              <a class="link-secondary" href="rules.html">View Rules</a>
-            </div>
-          </div>
+  <!-- Move this UP to become the visual anchor -->
+  <div class="progress-anchor" aria-hidden="true">
+    <span class="start-amount">$1.50</span>
+    <div class="progress-track" role="img" aria-label="Progress track from $1.50 to $100">
+      <div class="progress-fill"></div>
+    </div>
+    <span class="end-amount">$100 <span class="arrow">▶</span></span>
+  </div>
+
+  <p class="lead">
+    This is a skill-based Mines challenge. There are no tricks, no time limits, and no hidden rules.
+  </p>
+
+  <ul class="summary">
+    <li>Most players won’t finish.</li>
+    <li>Some will get close.</li>
+    <li>A few will beat it — and those players get paid.</li>
+  </ul>
+
+  <!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <h2>🔒 Enter the $100 Mines Challenge</h2>
+
+    <p class="fee">Entry Fee: <strong>$6.99</strong></p>
+
+    <ol>
+       <li>
+      Send <strong>$6.99</strong> to
+      <button type="button" class="copy-tag" onclick="copyCashtag()">$SkillChallenge</button>
+      on Cash App
+      </li>
+      <li><strong>Include your email</strong> in the payment note</li>
+      <li>Click confirm after sending</li>
+    </ol>
+
+    <label class="checkbox">
+      <input type="checkbox" id="agreeRules">
+      I have read and agree to the <a href="rules.html" target="_blank">challenge rules</a>
+    </label>
+
+    <p class="crypto-note">
+      Prefer crypto? USDC or BTC available upon request.
+    </p>
+
+    <button id="confirmPayment" disabled>I've Sent Payment</button>
+    <button class="close-btn" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+  <!-- Make CTA row feel like the “moment” -->
+  <div class="hero-ctas">
+    <div class="cta-btn-row">
+      <button class="btn btn-primary" type="button" onclick="openModal()">Pay Entry & Start Challenge</button>
+      <a class="link-secondary" href="rules.html">View Rules</a>
+    </div>
+    <div class="cta-note" style="font-size:12px;color:var(--muted,#9aa4b2);margin-top:6px;letter-spacing:0.01em;text-align:center;">No account required &bull; Manual review &bull; Real payouts</div>
+  </div>
+  </div>
 
           <aside class="hero-side">
             <div class="card">
               <h3>What you get</h3>
               <ul class="what-you-get">
-                <li><strong>Entry:</strong> $7</li>
+                <li><strong>Entry:</strong> $6.99</li>
                 <li><strong>Starting balance:</strong> $1.50</li>
                 <li><strong>Game:</strong> Mines</li>
                 <li><strong>Goal:</strong> $100</li>
@@ -55,12 +105,6 @@
           </aside>
         </div>
       </section>
-
-      <section id="start" class="section container">
-        <h2>Get started</h2>
-        <p class="muted">Click the button to enter the challenge.</p>
-        <a class="btn btn-primary" href="#">Start the Challenge</a>
-      </section>
     </main>
 
     <footer class="site-footer">
@@ -70,5 +114,70 @@
     </footer>
 
     <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script>
+  const modal = document.getElementById("paymentModal");
+  const agree = document.getElementById("agreeRules");
+  const confirmBtn = document.getElementById("confirmPayment");
+
+  function openModal() {
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+  modal.style.display = "none";
+  agree.checked = false;
+  confirmBtn.disabled = true;
+  confirmBtn.classList.remove("enabled");
+}
+
+const winModal = document.getElementById("winModal");
+const winBalance = document.getElementById("winBalance");
+const winCloseBtn = document.getElementById("winCloseBtn");
+
+function copyCashtag() {
+  navigator.clipboard.writeText("$SkillChallenge");
+  statusTextToast("Cashtag copied: $SkillChallenge");
+}
+
+function statusTextToast(msg){
+  const el = document.createElement("div");
+  el.textContent = msg;
+  el.style.position = "fixed";
+  el.style.left = "50%";
+  el.style.bottom = "24px";
+  el.style.transform = "translateX(-50%)";
+  el.style.background = "rgba(15,23,36,.92)";
+  el.style.border = "1px solid rgba(255,255,255,.12)";
+  el.style.color = "#e6eef6";
+  el.style.padding = "10px 12px";
+  el.style.borderRadius = "12px";
+  el.style.zIndex = "2000";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1400);
+}
+
+  window.addEventListener("click", (e) => {
+  if (e.target === modal) closeModal();
+  });
+
+  agree.addEventListener("change", () => {
+    if (agree.checked) {
+      confirmBtn.disabled = false;
+      confirmBtn.classList.add("enabled");
+    } else {
+      confirmBtn.disabled = true;
+      confirmBtn.classList.remove("enabled");
+    }
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    window.location.href = "https://forms.gle/nmnyV9HNMdpdWdY27";
+  });
+
+  winCloseBtn.addEventListener("click", hideWinModal);
+winModal.addEventListener("click", (e) => { if (e.target === winModal) hideWinModal(); });
+
+</script>
   </body>
 </html>
