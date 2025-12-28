@@ -206,7 +206,47 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+const WORKER_URL = "https://mines-gate.curtwilkin.workers.dev";
+
+async function validateEntry() {
+  let code = localStorage.getItem("mines_code");
+
+  if (!code) {
+    code = prompt("Enter your challenge code:");
+    if (!code) {
+      document.body.innerHTML =
+        "<h2 style='color:white;text-align:center;margin-top:40vh'>Access denied</h2>";
+      throw new Error("No code entered");
+    }
+  }
+
+  let data;
+  try {
+    const res = await fetch(
+      `${WORKER_URL}/use?code=${encodeURIComponent(code)}`,
+      { cache: "no-store" }
+    );
+    data = await res.json();
+  } catch (e) {
+    document.body.innerHTML =
+      "<h2 style='color:white;text-align:center;margin-top:40vh'>Server error. Try again.</h2>";
+    throw e;
+  }
+
+  if (!data.ok) {
+    localStorage.removeItem("mines_code");
+    document.body.innerHTML =
+      "<h2 style='color:white;text-align:center;margin-top:40vh'>Invalid or used code</h2>";
+    throw new Error("Invalid or used code");
+  }
+
+  // lock the code to this browser
+  localStorage.setItem("mines_code", code);
+}
+
+await validateEntry();
+
   const BOARD_SIZE = 25; // 5x5
   const MINES = 5;
   const START_BALANCE = 1.50;
