@@ -406,3 +406,149 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   MOBILE OVERRIDES (paste at bottom)
+   ========================= */
+
+html, body { overflow-x: hidden; }
+img { max-width: 100%; height: auto; }
+
+@media (max-width: 880px) {
+  /* Stack hero + remove artificial narrow column */
+  .hero-inner { grid-template-columns: 1fr; gap: 18px; }
+
+  .hero-copy {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Make headline breathe */
+  h1, .hero-title {
+    font-size: 32px;
+    line-height: 1.08;
+  }
+
+  .subhead { font-size: 16px; }
+  .lead { font-size: 14px; }
+
+  /* CTA row: stack */
+  .cta-btn-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .link-secondary {
+    display: block;
+    text-align: center;
+  }
+
+  /* Progress bar spacing + smaller labels */
+  .progress-anchor { gap: 10px; font-size: 12px; }
+  .start-amount, .end-amount { font-size: 12px; }
+}
+
+@media (max-width: 520px) {
+  .container { padding: 16px; }
+  .site-header { padding: 10px 0; }
+
+  /* Badge stops overlapping content on tiny screens */
+  .early-access-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  /* Modal fits phones */
+  .modal-content {
+    width: calc(100% - 24px);
+    max-width: 520px;
+    margin: 12vh auto;
+    padding: 18px;
+  }
+
+  /* Card spacing */
+  .card { padding: 16px; }
+}
+
+/* =========================
+   MOBILE GAME LAYOUT FIX
+   ========================= */
+
+@media (max-width: 900px) {
+
+  /* Stack layout */
+  .grid-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Board comes FIRST */
+  .grid-wrap > .panel:nth-child(2) {
+    order: 1;
+  }
+
+  /* Controls come SECOND */
+  .grid-wrap > .panel.controls {
+    order: 2;
+  }
+
+  /* Make board feel dominant */
+  .panel {
+    padding: 14px;
+  }
+
+  /* Big primary action like casino */
+  #startBtn {
+    font-size: 18px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  /* Bet input feels like footer control */
+  .controls {
+    position: relative;
+  }
+
+  .controls label {
+    font-size: 13px;
+  }
+
+  .controls input {
+    font-size: 16px;
+    padding: 12px;
+  }
+}
+
+/* Default: normal layout on desktop */
+.mobile-action-slot { margin-top: 12px; }
+.bet-row label { display:block; color: var(--muted); font-size:12px; margin-bottom:6px; }
+.bet-row input { width:100%; }
+
+/* MOBILE: move bet + buttons under the board */
+@media (max-width: 900px) {
+  .grid-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Make board first */
+  .grid-wrap > .panel:nth-child(2) { order: 1; }
+
+  /* Controls second */
+  .grid-wrap > .panel.controls { order: 2; }
+
+  /* Put the bet+buttons visually at the TOP of the controls panel */
+  .mobile-action-slot { order: -1; margin-top: 0; }
+
+  /* Make them feel like a casino action bar */
+  .bet-row input { padding: 12px; font-size: 16px; border-radius: 12px; }
+
+  .action-row { display: grid; gap: 10px; margin-top: 10px; }
+  #startBtn { padding: 14px; font-size: 18px; border-radius: 14px; }
+}

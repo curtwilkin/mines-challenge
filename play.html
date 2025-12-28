@@ -68,6 +68,27 @@
       display:none;
     }
     .winbar a{color:#aef6f2;font-weight:900}
+    /* Action panel hidden on desktop */
+.action-panel { display: none; }
+
+/* MOBILE: board -> action -> stats */
+@media (max-width: 900px) {
+  .grid-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+  .board-panel { order: 1; }
+  .action-panel { order: 2; display: block; }
+  .panel.controls { order: 3; }
+
+  /* Make the action panel feel like a casino control bar */
+  .action-panel .bet-row label {
+    display:block; color: var(--muted); font-size:12px; margin-bottom:6px;
+  }
+  .action-panel .bet-row input {
+    width:100%; padding: 12px; font-size:16px; border-radius:12px;
+  }
+  .action-panel .action-row { display: grid; gap: 10px; margin-top: 10px; }
+  .action-panel #startBtn { padding: 14px; font-size: 18px; border-radius: 14px; }
+}
   </style>
 </head>
 
@@ -101,8 +122,18 @@
           </div>
         </div>
 
-        <label for="betInput">Bet amount</label>
-        <input id="betInput" type="number" step="0.01" min="0.01" value="0.10" />
+        <div class="mobile-action-slot">
+  <div class="bet-row">
+    <label for="betInput">Bet amount</label>
+    <input id="betInput" type="number" step="0.01" min="0.01" value="0.10" />
+  </div>
+
+  <div class="action-row">
+     <button class="btn btn-primary" id="startBtn">Start Round</button>
+       <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
+       <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
+      </div>
+    </div>
 
         <div class="statrow">
           <div class="stat">
@@ -126,12 +157,6 @@
           </div>
         </div>
 
-        <div style="margin-top:12px;display:grid;gap:10px">
-          <button class="btn btn-primary" id="startBtn">Start Round</button>
-          <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
-          <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
-        </div>
-
         <div class="notice">
           Starts at <b>$1.50</b>. If your balance hits <b>$0</b>, your run ends.<br>
           Hit <b>$100</b> to win, then submit proof for payout.
@@ -143,7 +168,7 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel board-panel">
         <div class="row">
           <div class="left" style="gap:12px">
             <div style="font-weight:900;font-size:18px">Mines Board</div>
@@ -157,6 +182,7 @@
           Tip: Discipline wins. Cash out. Don’t chase.
         </div>
       </div>
+      <div class="panel action-panel" id="actionPanel"></div>
     </div>
   </div>
 
@@ -367,6 +393,28 @@
     startBtn.disabled = false;
     updateBalanceUI();
   }
+
+function placeMobileActionPanel(){
+  const slot = document.querySelector(".mobile-action-slot");
+  const panel = document.getElementById("actionPanel");
+  const controls = document.querySelector(".panel.controls");
+  if (!slot || !panel || !controls) return;
+
+  const isMobile = window.matchMedia("(max-width: 900px)").matches;
+
+  if (isMobile) {
+    // put bet + buttons RIGHT under the board
+    if (slot.parentElement !== panel) panel.appendChild(slot);
+  } else {
+    // put it back near the top of controls on desktop
+    const firstStatRow = controls.querySelector(".statrow");
+    if (firstStatRow) firstStatRow.insertAdjacentElement("afterend", slot);
+    else controls.prepend(slot);
+  }
+}
+
+placeMobileActionPanel();
+window.addEventListener("resize", placeMobileActionPanel);
 
   buildBoard();
   resetRoundUI();
