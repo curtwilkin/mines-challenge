@@ -122,19 +122,6 @@
           </div>
         </div>
 
-        <div class="mobile-action-slot">
-  <div class="bet-row">
-    <label for="betInput">Bet amount</label>
-    <input id="betInput" type="number" step="0.01" min="0.01" value="0.10" />
-  </div>
-
-  <div class="action-row">
-     <button class="btn btn-primary" id="startBtn">Start Round</button>
-       <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
-       <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
-      </div>
-    </div>
-
         <div class="statrow">
           <div class="stat">
             <div class="label">Safe picks</div>
@@ -182,9 +169,22 @@
           Tip: Discipline wins. Cash out. Don’t chase.
         </div>
       </div>
-      <div class="panel action-panel" id="actionPanel"></div>
+
+      <div class="panel action-panel" id="actionPanel">
+         <div class="mobile-action-slot">
+        <div class="bet-row">
+    <label for="betInput">Bet amount</label>
+    <input id="betInput" type="number" step="0.01" min="0.01" value="0.10" />
+  </div>
+
+  <div class="action-row">
+     <button class="btn btn-primary" id="startBtn">Start Round</button>
+       <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
+       <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
+      </div>
     </div>
   </div>
+</div>
 
 <script>
   const BOARD_SIZE = 25; // 5x5
