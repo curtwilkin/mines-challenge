@@ -72,22 +72,42 @@
 .action-panel { display: none; }
 
 /* MOBILE: board -> action -> stats */
-@media (max-width: 900px) {
-  .grid-wrap { display: flex; flex-direction: column; gap: 14px; }
+/* 3-panel layout: controls + action in left column, board on right */
+.grid-wrap{
+  display:grid;
+  grid-template-columns: 320px 1fr;
+  gap:16px;
+  grid-template-areas:
+    "controls board"
+    "action   board";
+}
 
-  .board-panel { order: 1; }
-  .action-panel { order: 2; display: block; }
-  .panel.controls { order: 3; }
+.panel.controls{ grid-area: controls; }
+.panel.board-panel{ grid-area: board; }
+.panel.action-panel{ grid-area: action; display:block; }
 
-  /* Make the action panel feel like a casino control bar */
-  .action-panel .bet-row label {
-    display:block; color: var(--muted); font-size:12px; margin-bottom:6px;
+/* Make action-panel inputs match your dark theme (fixes white input) */
+.action-panel input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:#0b1421;
+  color:var(--text);
+}
+
+/* MOBILE: stack -> board, then action, then stats/controls */
+@media (max-width: 900px){
+  .grid-wrap{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "board"
+      "action"
+      "controls";
   }
-  .action-panel .bet-row input {
-    width:100%; padding: 12px; font-size:16px; border-radius:12px;
-  }
-  .action-panel .action-row { display: grid; gap: 10px; margin-top: 10px; }
-  .action-panel #startBtn { padding: 14px; font-size: 18px; border-radius: 14px; }
+
+  .action-row{ display:grid; gap:10px; margin-top:10px; }
+  #startBtn{ padding:14px; font-size:18px; border-radius:14px; }
 }
   </style>
 </head>
@@ -393,28 +413,6 @@
     startBtn.disabled = false;
     updateBalanceUI();
   }
-
-function placeMobileActionPanel(){
-  const slot = document.querySelector(".mobile-action-slot");
-  const panel = document.getElementById("actionPanel");
-  const controls = document.querySelector(".panel.controls");
-  if (!slot || !panel || !controls) return;
-
-  const isMobile = window.matchMedia("(max-width: 900px)").matches;
-
-  if (isMobile) {
-    // put bet + buttons RIGHT under the board
-    if (slot.parentElement !== panel) panel.appendChild(slot);
-  } else {
-    // put it back near the top of controls on desktop
-    const firstStatRow = controls.querySelector(".statrow");
-    if (firstStatRow) firstStatRow.insertAdjacentElement("afterend", slot);
-    else controls.prepend(slot);
-  }
-}
-
-placeMobileActionPanel();
-window.addEventListener("resize", placeMobileActionPanel);
 
   buildBoard();
   resetRoundUI();
