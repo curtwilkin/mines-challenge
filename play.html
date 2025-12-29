@@ -221,28 +221,33 @@ async function validateEntry() {
     }
   }
 
-  let data;
-  try {
-    const res = await fetch(
-      `${WORKER_URL}/use?code=${encodeURIComponent(code)}`,
-      { cache: "no-store" }
-    );
-    data = await res.json();
-  } catch (e) {
-    document.body.innerHTML =
-      "<h2 style='color:white;text-align:center;margin-top:40vh'>Server error. Try again.</h2>";
-    throw e;
-  }
+  let state;
 
-  if (!data.ok) {
+  try {
+    const res = await fetch(`${WORKER_URL}/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+      cache: "no-store"
+    });
+
+    state = await res.json();
+
+    if (!res.ok) throw new Error(state.error || "Invalid code");
+  } catch (e) {
     localStorage.removeItem("mines_code");
     document.body.innerHTML =
       "<h2 style='color:white;text-align:center;margin-top:40vh'>Invalid or used code</h2>";
-    throw new Error("Invalid or used code");
+    throw e;
   }
 
-  // lock the code to this browser
+  // lock code to this browser
   localStorage.setItem("mines_code", code);
+
+  // OPTIONAL (v1-safe): hydrate balance if resuming
+  if (typeof state.balance === "number") {
+    balance = state.balance;
+  }
 }
 
 await validateEntry();
