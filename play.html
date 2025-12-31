@@ -209,6 +209,38 @@
 <script type="module">
 const WORKER_URL = "https://mines-gate.curtwilkin.workers.dev";
 
+const RUN_KEY = "mines_run_state";
+
+function saveRunState() {
+  const state = {
+    balance,
+    safePicks,
+    inRound,
+    wager
+  };
+  localStorage.setItem(RUN_KEY, JSON.stringify(state));
+}
+
+function loadRunState() {
+  const raw = localStorage.getItem(RUN_KEY);
+  if (!raw) return false;
+
+  try {
+    const state = JSON.parse(raw);
+    balance = state.balance ?? balance;
+    safePicks = state.safePicks ?? 0;
+    inRound = false; // never resume mid-round
+    wager = 0;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function clearRunState() {
+  localStorage.removeItem(RUN_KEY);
+}
+
 async function validateEntry() {
   let code = localStorage.getItem("mines_code");
 
@@ -306,6 +338,8 @@ await validateEntry();
     }
   }
 
+  loadRunState();
+
   function setTilesEnabled(enabled){
     [...boardEl.children].forEach(t => {
       t.disabled = !enabled;
@@ -343,6 +377,10 @@ await validateEntry();
     } else {
       newRunBtn.style.display = "none";
       startBtn.disabled = false;
+    }
+
+    if (balance <= 0 || balance >= TARGET) {
+    clearRunState();
     }
   }
 
@@ -390,6 +428,7 @@ await validateEntry();
     cashoutBtn.disabled = false;
     updateBalanceUI();
     updateCashoutUI();
+    saveRunState();
   }
 
   function onTileClick(idx, tileEl){
@@ -417,6 +456,7 @@ await validateEntry();
     safePicks++;
     safeText.textContent = String(safePicks);
     updateCashoutUI();
+    saveRunState();
   }
 
   function cashout(){
@@ -434,6 +474,7 @@ await validateEntry();
     inRoundText.textContent = "—";
 
     updateBalanceUI();
+    saveRunState();
   }
 
   function newRun(){
@@ -451,6 +492,7 @@ await validateEntry();
   resetRoundUI();
   updateBalanceUI();
   setTilesEnabled(false);
+  saveRunState();
 
   startBtn.addEventListener("click", startRound);
   cashoutBtn.addEventListener("click", cashout);
