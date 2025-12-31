@@ -225,25 +225,6 @@ async function finishRun() {
   localStorage.removeItem("mines_code");
 }
 
-function requireUserGesture() {
-  if (entryValidated) return;
-
-  document.body.addEventListener(
-    "click",
-    async () => {
-      if (entryValidated) return;
-
-      try {
-        await validateEntry();
-        entryValidated = true;
-      } catch (e) {
-        // already handled inside validateEntry
-      }
-    },
-    { once: true }
-  );
-}
-
 function saveRunState() {
   const state = {
     balance,
@@ -542,12 +523,13 @@ function unlockBetUI() {
     saveRunState();
   }
 
+  await validateEntry();
+
   buildBoard();
   resetRoundUI();
   updateBalanceUI();
   setTilesEnabled(false);
   saveRunState();
-  requireUserGesture();
 
   startBtn.addEventListener("click", startRound);
   cashoutBtn.addEventListener("click", cashout);
