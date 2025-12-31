@@ -200,7 +200,6 @@
   <div class="action-row">
      <button class="btn btn-primary" id="startBtn">Start Round</button>
        <button class="btn btn-ghost" id="cashoutBtn" disabled>Cashout</button>
-       <button class="btn btn-danger" id="newRunBtn" style="display:none">Start New Run</button>
       </div>
     </div>
   </div>
@@ -313,7 +312,6 @@ async function validateEntry() {
   const statusText = document.getElementById("statusText");
   const startBtn = document.getElementById("startBtn");
   const cashoutBtn = document.getElementById("cashoutBtn");
-  const newRunBtn = document.getElementById("newRunBtn");
   const winBar = document.getElementById("winBar");
 
   function fmtMoney(x){ return "$" + x.toFixed(2); }
@@ -328,6 +326,16 @@ async function validateEntry() {
     }
     return num / den;
   }
+
+  function lockBetUI() {
+  betInput.disabled = true;
+  startBtn.disabled = true;
+}
+
+function unlockBetUI() {
+  betInput.disabled = false;
+  startBtn.disabled = false;
+}
 
   function fairMultiplier(k){
     if (k <= 0) return 1.0;
@@ -388,13 +396,11 @@ async function validateEntry() {
     winBar.style.display = (balance >= TARGET) ? "block" : "none";
 
     if (balance <= 0){
-      newRunBtn.style.display = "block";
       statusText.textContent = "Run ended";
       setTilesEnabled(false);
       startBtn.disabled = true;
       cashoutBtn.disabled = true;
     } else {
-      newRunBtn.style.display = "none";
       startBtn.disabled = false;
     }
 
@@ -439,6 +445,7 @@ async function validateEntry() {
     mineSet = new Set(indices.slice(0, MINES));
 
     inRound = true;
+    lockBetUI();
     resetRoundUI();
     setTilesEnabled(true);
 
@@ -467,6 +474,7 @@ async function validateEntry() {
       wager = 0;
       inRoundText.textContent = "—";
       updateBalanceUI();
+      unlockBetUI();
       return;
     }
 
@@ -485,6 +493,7 @@ async function validateEntry() {
     balance = Math.round((balance + payout) * 100) / 100;
 
     inRound = false;
+    unlockBetUI();
     setTilesEnabled(false);
     cashoutBtn.disabled = true;
 
@@ -496,17 +505,6 @@ async function validateEntry() {
     saveRunState();
   }
 
-  function newRun(){
-    balance = START_BALANCE;
-    inRound = false;
-    wager = 0;
-    mineSet = new Set();
-    resetRoundUI();
-    setTilesEnabled(false);
-    startBtn.disabled = false;
-    updateBalanceUI();
-  }
-
   buildBoard();
   resetRoundUI();
   updateBalanceUI();
@@ -516,7 +514,6 @@ async function validateEntry() {
 
   startBtn.addEventListener("click", startRound);
   cashoutBtn.addEventListener("click", cashout);
-  newRunBtn.addEventListener("click", newRun);
 
 window.addEventListener("DOMContentLoaded", () => {
   const stored = localStorage.getItem("mines_code");
