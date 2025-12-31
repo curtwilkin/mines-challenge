@@ -298,13 +298,8 @@ async function validateEntry() {
       };
     });
   }
-
-  // already have code
-  const res = await fetch(`${WORKER_URL}/use?code=${encodeURIComponent(code)}`);
-  if (!res.ok) {
-    localStorage.removeItem("mines_code");
-    location.reload();
-  }
+ // already validated earlier — do nothing
+return;
 }
   
   const BOARD_SIZE = 25; // 5x5
@@ -410,7 +405,11 @@ function unlockBetUI() {
     balanceText.textContent = fmtMoney(balance);
     betInput.max = Math.max(0.01, balance).toFixed(2);
 
-    winBar.style.display = (balance >= TARGET) ? "block" : "none";
+    if (balance >= TARGET) {
+    winBar.style.display = "block";
+    finishRun();
+    clearRunState();
+    }
 
     if (balance <= 0 && !inRound){
     statusText.textContent = "Run ended";
@@ -420,10 +419,6 @@ function unlockBetUI() {
   } else {
     startBtn.disabled = false;
   }
-    if (balance <= 0 || balance >= TARGET) {
-      finishRun();
-    clearRunState();
-    }
   }
 
   function updateCashoutUI(){
