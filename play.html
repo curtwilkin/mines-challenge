@@ -212,6 +212,19 @@ const RUN_KEY = "mines_run_state";
 
 let entryValidated = false;
 
+async function finishRun() {
+  const code = localStorage.getItem("mines_code");
+  if (!code) return;
+
+  await fetch(`${WORKER_URL}/finish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
+  });
+
+  localStorage.removeItem("mines_code");
+}
+
 function requireUserGesture() {
   if (entryValidated) return;
 
@@ -265,29 +278,52 @@ async function validateEntry() {
   let code = localStorage.getItem("mines_code");
 
   if (!code) {
-    code = prompt("Enter your challenge code:");
-    if (!code) {
-      document.body.innerHTML =
-        "<h2 style='color:white;text-align:center;margin-top:40vh'>Access denied</h2>";
-      throw new Error("No code entered");
-    }
+    document.body.innerHTML = `
+      <div style="
+        height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#0f1724;
+        color:white;
+        flex-direction:column;
+        gap:12px;
+      ">
+        <h2>Enter your challenge code</h2>
+        <input id="codeInput" style="padding:12px;font-size:18px" />
+        <button id="codeBtn" style="padding:12px 24px;font-size:18px">Enter</button>
+      </div>
+    `;
+
+    return new Promise(resolve => {
+      document.getElementById("codeBtn").onclick = async () => {
+        const input = document.getElementById("codeInput").value.trim();
+        if (!input) return;
+
+        const res = await fetch(
+          `${WORKER_URL}/use?code=${encodeURIComponent(input)}`,
+          { cache: "no-store" }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error);
+          return;
+        }
+
+        localStorage.setItem("mines_code", input);
+        location.reload();
+      };
+    });
   }
 
-  const res = await fetch(
-    `${WORKER_URL}/use?code=${encodeURIComponent(code)}`,
-    { method: "GET", cache: "no-store" }
-  );
-
-  const data = await res.json();
-
+  // already have code
+  const res = await fetch(`${WORKER_URL}/use?code=${encodeURIComponent(code)}`);
   if (!res.ok) {
     localStorage.removeItem("mines_code");
-    document.body.innerHTML =
-      `<h2 style='color:white;text-align:center;margin-top:40vh'>${data.error}</h2>`;
-    throw new Error(data.error);
+    location.reload();
   }
-
-  localStorage.setItem("mines_code", code);
 }
   
   const BOARD_SIZE = 25; // 5x5
@@ -395,16 +431,16 @@ function unlockBetUI() {
 
     winBar.style.display = (balance >= TARGET) ? "block" : "none";
 
-    if (balance <= 0){
-      statusText.textContent = "Run ended";
-      setTilesEnabled(false);
-      startBtn.disabled = true;
-      cashoutBtn.disabled = true;
-    } else {
-      startBtn.disabled = false;
-    }
-
+    if (balance <= 0 && !inRound){
+    statusText.textContent = "Run ended";
+    setTilesEnabled(false);
+    startBtn.disabled = true;
+  cashoutBtn.disabled = true;
+  } else {
+    startBtn.disabled = false;
+  }
     if (balance <= 0 || balance >= TARGET) {
+      finishRun();
     clearRunState();
     }
   }
@@ -457,7 +493,7 @@ function unlockBetUI() {
     saveRunState();
   }
 
-  function onTileClick(idx, tileEl){
+  async function onTileClick(idx, tileEl){
     if (!inRound) return;
     if (revealed.has(idx)) return;
 
@@ -473,6 +509,7 @@ function unlockBetUI() {
       statusText.textContent = "Boom. Round lost.";
       wager = 0;
       inRoundText.textContent = "—";
+      await finishRun();
       updateBalanceUI();
       unlockBetUI();
       return;
