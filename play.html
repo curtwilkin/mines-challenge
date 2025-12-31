@@ -211,6 +211,27 @@ const WORKER_URL = "https://mines-gate.curtwilkin.workers.dev";
 
 const RUN_KEY = "mines_run_state";
 
+let entryValidated = false;
+
+function requireUserGesture() {
+  if (entryValidated) return;
+
+  document.body.addEventListener(
+    "click",
+    async () => {
+      if (entryValidated) return;
+
+      try {
+        await validateEntry();
+        entryValidated = true;
+      } catch (e) {
+        // already handled inside validateEntry
+      }
+    },
+    { once: true }
+  );
+}
+
 function saveRunState() {
   const state = {
     balance,
@@ -269,8 +290,6 @@ async function validateEntry() {
 
   localStorage.setItem("mines_code", code);
 }
-
-await validateEntry();
   
   const BOARD_SIZE = 25; // 5x5
   const MINES = 5;
@@ -493,10 +512,24 @@ await validateEntry();
   updateBalanceUI();
   setTilesEnabled(false);
   saveRunState();
+  requireUserGesture();
 
   startBtn.addEventListener("click", startRound);
   cashoutBtn.addEventListener("click", cashout);
   newRunBtn.addEventListener("click", newRun);
+
+window.addEventListener("DOMContentLoaded", () => {
+  const stored = localStorage.getItem("mines_code");
+
+  if (stored) {
+    validateEntry().catch(() => {});
+  } else {
+    // show code gate ONLY after user interaction
+    const gate = document.getElementById("codeGate");
+    if (gate) gate.style.display = "flex";
+  }
+});
+
 </script>
 </body>
 </html>
