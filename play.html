@@ -221,37 +221,27 @@ async function validateEntry() {
     }
   }
 
-  let state;
+  const res = await fetch(
+    `${WORKER_URL}/use?code=${encodeURIComponent(code)}`,
+    { method: "GET", cache: "no-store" }
+  );
 
-  try {
-    const res = await fetch(`${WORKER_URL}/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-      cache: "no-store"
-    });
+  const data = await res.json();
 
-    state = await res.json();
-
-    if (!res.ok) throw new Error(state.error || "Invalid code");
-  } catch (e) {
+  if (!res.ok) {
     localStorage.removeItem("mines_code");
     document.body.innerHTML =
-      "<h2 style='color:white;text-align:center;margin-top:40vh'>Invalid or used code</h2>";
-    throw e;
+      `<h2 style='color:white;text-align:center;margin-top:40vh'>${data.error}</h2>`;
+    throw new Error(data.error);
   }
 
-  // lock code to this browser
   localStorage.setItem("mines_code", code);
-
-  // OPTIONAL (v1-safe): hydrate balance if resuming
-  if (typeof state.balance === "number") {
-    balance = state.balance;
-  }
 }
 
 await validateEntry();
 
+  updateBalanceUI();  
+  
   const BOARD_SIZE = 25; // 5x5
   const MINES = 5;
   const START_BALANCE = 1.50;
